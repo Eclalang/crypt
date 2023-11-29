@@ -1,12 +1,11 @@
 package crypt
 
-import (
-	"fmt"
-)
-
-func EncryptCaesar(cle int, messageDecode string) {
+func EncryptCaesar(cle int, messageDecode string) string {
 	messageCode := []rune{}
 	for i := 0; i < len(messageDecode); i++ {
+		if (messageDecode[i] < 'a' && messageDecode[i] > 'Z') || (messageDecode[i] < 'A' || messageDecode[i] > 'z') {
+			messageCode = append(messageCode, rune(messageDecode[i]))
+		}
 		if messageDecode[i] >= 'a' && messageDecode[i] <= 'z' {
 			Lettre := int((messageDecode[i])) + cle
 			if Lettre > 122 {
@@ -22,12 +21,15 @@ func EncryptCaesar(cle int, messageDecode string) {
 			messageCode = append(messageCode, rune(Lettre))
 		}
 	}
-	fmt.Println(string(messageCode))
+	return string(messageCode)
 }
 
-func DecryptCaesar(cle int, messageCode string) {
+func DecryptCaesar(cle int, messageCode string) string {
 	messageDecode := []rune{}
 	for i := 0; i < len(messageCode); i++ {
+		if (messageCode[i] < 'a' && messageCode[i] > 'Z') || (messageCode[i] < 'A' || messageCode[i] > 'z') {
+			messageDecode = append(messageDecode, rune(messageCode[i]))
+		}
 		if messageCode[i] >= 'a' && messageCode[i] <= 'z' {
 			Lettre := int((messageCode[i])) - cle
 			if Lettre < 97 {
@@ -43,5 +45,5 @@ func DecryptCaesar(cle int, messageCode string) {
 			messageDecode = append(messageDecode, rune(Lettre))
 		}
 	}
-	fmt.Println(string(messageDecode))
+	return string(messageDecode)
 }
