@@ -8,15 +8,21 @@ func EncryptCaesar(cle int, messageDecode string) string {
 		}
 		if messageDecode[i] >= 'a' && messageDecode[i] <= 'z' {
 			Lettre := int((messageDecode[i])) + cle
-			if Lettre > 122 {
+			for Lettre > 122 {
 				Lettre -= 26
+			}
+			for Lettre < 97 {
+				Lettre += 26
 			}
 			messageCode = append(messageCode, rune(Lettre))
 		}
 		if messageDecode[i] >= 'A' && messageDecode[i] <= 'Z' {
 			Lettre := int((messageDecode[i])) + cle
-			if Lettre > 90 {
+			for Lettre > 90 {
 				Lettre -= 26
+			}
+			for Lettre < 65 {
+				Lettre += 26
 			}
 			messageCode = append(messageCode, rune(Lettre))
 		}
@@ -32,14 +38,20 @@ func DecryptCaesar(cle int, messageCode string) string {
 		}
 		if messageCode[i] >= 'a' && messageCode[i] <= 'z' {
 			Lettre := int((messageCode[i])) - cle
-			if Lettre < 97 {
+			for Lettre > 122 {
+				Lettre -= 26
+			}
+			for Lettre < 97 {
 				Lettre += 26
 			}
 			messageDecode = append(messageDecode, rune(Lettre))
 		}
 		if messageCode[i] >= 'A' && messageCode[i] <= 'Z' {
 			Lettre := int((messageCode[i])) - cle
-			if Lettre < 65 {
+			for Lettre > 90 {
+				Lettre -= 26
+			}
+			for Lettre < 65 {
 				Lettre += 26
 			}
 			messageDecode = append(messageDecode, rune(Lettre))
