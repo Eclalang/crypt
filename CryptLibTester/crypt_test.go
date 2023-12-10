@@ -22,3 +22,20 @@ func TestCaesar(t *testing.T) {
 		t.Errorf("crypt.DecryptCaesar(%v, %v) \n, got %v \n expected %v \n", key, got, gotDecrypt, expectedDecrypt)
 	}
 }
+
+func TestRC4(t *testing.T) {
+	cle := "15iope"
+	message := "Bonjour tout le monde"
+	expected := "sZDGIDAIXT"
+	got := crypt.EncryptRC4(cle, message)
+	expectedDecrypt := message
+	gotDecrypt := crypt.DecryptRC4(cle, got)
+	t.Log("Message ", message, ", la clé est ", cle, "\nLe message crypté est ", got, "\nUne fois décrypté le message est, ", gotDecrypt)
+
+	if expected != got {
+		t.Errorf("crypt.EncryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, message, got, expected)
+	}
+	if expectedDecrypt != gotDecrypt {
+		t.Errorf("crypt.DecryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, got, gotDecrypt, expectedDecrypt)
+	}
+}
