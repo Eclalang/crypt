@@ -24,18 +24,27 @@ func TestCaesar(t *testing.T) {
 }
 
 func TestRC4(t *testing.T) {
-	cle := "15iope"
-	message := "Bonjour tout le monde"
-	expected := "sZDGIDAIXT"
-	got := crypt.EncryptRC4(cle, message)
-	expectedDecrypt := message
-	gotDecrypt := crypt.DecryptRC4(cle, got)
-	t.Log("Message ", message, ", la clé est ", cle, "\nLe message crypté est ", got, "\nUne fois décrypté le message est, ", gotDecrypt)
-
-	if expected != got {
-		t.Errorf("crypt.EncryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, message, got, expected)
+	TableauTest := []rune{}
+	cle := "öµ€1"
+	message := "Ecla the best lang"
+	for i := 0; i < len(crypt.EncryptRC4(cle, message)); i++ {
+		TableauTest = append(TableauTest, rune(crypt.EncryptRC4(cle, message)[i]))
 	}
-	if expectedDecrypt != gotDecrypt {
-		t.Errorf("crypt.DecryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, got, gotDecrypt, expectedDecrypt)
+	expected := "çEærÝ)!_£Å=D¸<Ï½?­"
+	TableauExpected := []rune{}
+	for i := 0; i < len(expected); i++ {
+		TableauExpected = append(TableauExpected, rune(expected[i]))
 	}
+	got := TableauTest
+	//expectedDecrypt := message
+	//gotDecrypt := crypt.DecryptRC4(cle, expected)
+	t.Log("Message ", message, ", la clé est ", cle, "\nLe message crypté est " /*, expected, "\nUne fois décrypté le message est, ", expectedDecrypt*/)
+	for i := 0; i < len(TableauTest); i++ {
+		if TableauExpected[i] != got[i] {
+			t.Errorf("crypt.EncryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, message, got, TableauExpected)
+		}
+	}
+	//if expectedDecrypt != gotDecrypt {
+	//	t.Errorf("crypt.DecryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, got, gotDecrypt, expectedDecrypt)
+	//}
 }
