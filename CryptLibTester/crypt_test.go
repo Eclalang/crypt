@@ -1,11 +1,13 @@
 package crypt
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Eclalang/crypt"
 )
 
+// Test the 'Encrypt' and 'Decrypt' Caesar functions.
 func TestCaesar(t *testing.T) {
 	key := 13
 	message := "Le trafic est interrompu sur le Rer A entre nanterre prefecture et gare de lyon en raison d'un bagage oublie a Chatelet les Halles"
@@ -23,28 +25,52 @@ func TestCaesar(t *testing.T) {
 	}
 }
 
+// Test the 'Encrypt' and 'Decrypt' RC4 functions.
 func TestRC4(t *testing.T) {
-	TableauTest := []rune{}
-	cle := "öµ€1"
-	message := "Ecla the best lang"
-	for i := 0; i < len(crypt.EncryptRC4(cle, message)); i++ {
-		TableauTest = append(TableauTest, rune(crypt.EncryptRC4(cle, message)[i]))
+	cle := "^*$$1"
+	message := "Ecla The Best Lang"
+	expected := [][]int{
+		{1, 0, 1, 0, 1, 1, 0, 0},
+		{1, 1, 0, 0, 1, 1, 1, 0},
+		{0, 0, 1, 0, 0, 1, 1, 1},
+		{0, 1, 1, 1, 1, 0, 0, 0},
+		{0, 1, 0, 0, 0, 1, 0, 1},
+		{1, 0, 0, 1, 0, 1, 1, 0},
+		{1, 0, 0, 0, 1, 0, 1, 1},
+		{1, 0, 0, 0, 0, 0, 1, 1},
+		{0, 0, 0, 1, 1, 1, 0, 0},
+		{1, 1, 0, 1, 1, 1, 1, 0},
+		{0, 0, 1, 1, 1, 1, 0, 0},
+		{0, 0, 0, 1, 1, 1, 0, 1},
+		{0, 0, 0, 1, 0, 0, 0, 0},
+		{1, 0, 0, 1, 1, 0, 0, 1},
+		{0, 1, 1, 0, 1, 0, 1, 1},
+		{0, 1, 1, 1, 0, 1, 0, 1},
+		{0, 1, 1, 0, 0, 0, 0, 0},
+		{1, 0, 1, 0, 0, 1, 1, 1},
 	}
-	expected := "çEærÝ)!_£Å=D¸<Ï½?­"
-	TableauExpected := []rune{}
-	for i := 0; i < len(expected); i++ {
-		TableauExpected = append(TableauExpected, rune(expected[i]))
+	got := crypt.EncryptRC4(cle, message)
+	binGot := crypt.StringToBinary(got)
+
+	t.Log("Message:", message)
+	t.Log("Clé:", cle)
+	t.Log("Message crypté:", got)
+
+	cols := 8
+	var structuredGot [][]int
+	for i := 0; i < len(binGot); i += cols {
+		structuredGot = append(structuredGot, binGot[i:i+cols])
 	}
-	got := TableauTest
-	//expectedDecrypt := message
-	//gotDecrypt := crypt.DecryptRC4(cle, expected)
-	t.Log("Message ", message, ", la clé est ", cle, "\nLe message crypté est " /*, expected, "\nUne fois décrypté le message est, ", expectedDecrypt*/)
-	for i := 0; i < len(TableauTest); i++ {
-		if TableauExpected[i] != got[i] {
-			t.Errorf("crypt.EncryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, message, got, TableauExpected)
-		}
+
+	t.Log("Binary representation of got:", structuredGot)
+	t.Log("Expected binary representation:", expected)
+
+	if fmt.Sprintf("%v", expected) != fmt.Sprintf("%v", structuredGot) {
+		t.Errorf("Erreur d'encryptage: got %v, expected %v", structuredGot, expected)
 	}
-	//if expectedDecrypt != gotDecrypt {
-	//	t.Errorf("crypt.DecryptRC4(%v, %v) \n, got %v \n expected %v \n", cle, got, gotDecrypt, expectedDecrypt)
-	//}
+
+	decrypted := crypt.DecryptRC4(cle, crypt.EncryptRC4(cle, message))
+	if message != decrypted {
+		t.Errorf("Erreur de décryptage: got %v, expected %v", decrypted, message)
+	}
 }
