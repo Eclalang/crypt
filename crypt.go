@@ -1,5 +1,10 @@
 package crypt
 
+import (
+	"fmt"
+	"strconv"
+)
+
 func EncryptCaesar(cle int, OriginalMessage string) string {
 	CryptedMessage := []rune{}
 	//a loop which through the caracters of the string one by one
@@ -160,4 +165,58 @@ func DecryptRC4(cle string, CryptedMessage string) string {
 		i++
 	}
 	return string(OriginalMessage)
+}
+
+func GeneratKeyRSA(p, q int) ([]int, []int) {
+	N := p * q
+	X := (p - 1) * (q - 1)
+	E := 65537
+	D := ModuloInverse(E, X)
+
+	publicKey := []int{N, E}
+	privateKey := []int{N, D}
+
+	return publicKey, privateKey
+}
+
+func EncryptRSA(N, E int, message string) int {
+	/*for _, r := range message {
+		char := int(r)
+		encryptedChar := ModExp(char, E, N)
+		CryptedMessage = append(CryptedMessage, encryptedChar)
+	}*/
+	TableauMessage := 0
+	for i := 0; i < len(message); i++ {
+		if GetNumeroASCII(rune(message[i])) >= 100 {
+			TableauMessage = TableauMessage*1000 + GetNumeroASCII(rune(message[i]))
+		} else {
+			TableauMessage = TableauMessage*100 + GetNumeroASCII(rune(message[i]))
+		}
+	}
+	CryptedMessage := ModExp(TableauMessage, E, N)
+
+	return CryptedMessage
+}
+
+func DecryptRSA(N, D int, ciphertext int) string {
+	/*for _, r := range ciphertext {
+		char := int(r)
+		decryptedChar := ModExp(char, D, N)
+		DecryptedMessage = append(DecryptedMessage, decryptedChar)
+	}*/
+	Decryption := ModExp(ciphertext, D, N)
+	fmt.Println(Decryption, "ayaaaaaaaaaa")
+	MessageFinal := []rune{}
+	DecryptedMessage := intToString(Decryption)
+	for i := 0; i < len(DecryptedMessage)-1; i++ {
+		if DecryptedMessage[i] != 49 {
+			test, _ := strconv.Atoi(string(DecryptedMessage[i]))
+			test2, _ := strconv.Atoi(string(DecryptedMessage[i+1]))
+			test3 := test*10 + test2
+			fmt.Println(test3)
+			MessageFinal = append(MessageFinal, rune(test3))
+			i += 1
+		}
+	}
+	return string(MessageFinal)
 }

@@ -74,3 +74,16 @@ func TestRC4(t *testing.T) {
 		t.Errorf("Erreur de décryptage: got %v, expected %v", decrypted, message)
 	}
 }
+
+func TestRSA(t *testing.T) {
+	PublicKey, _ := crypt.GeneratKeyRSA(2381, 3677)
+	expectedkey := 8754937
+	if PublicKey[0] != expectedkey {
+		t.Errorf("erreur le sang got %v, expected %v", PublicKey[0], expectedkey)
+	}
+	got := crypt.EncryptRSA(PublicKey[0], PublicKey[1], "Ecla the Best Lang")
+	expected := 1214164
+	if got != expected {
+		t.Errorf("Erreur d'encryptage: got %v, expected %v", got, expected)
+	}
+}
