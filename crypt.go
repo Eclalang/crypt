@@ -1,11 +1,11 @@
 package crypt
 
 import (
-	"fmt"
-	"strconv"
+	"math/big"
 )
 
 func EncryptCaesar(cle int, OriginalMessage string) string {
+
 	CryptedMessage := []rune{}
 	//a loop which through the caracters of the string one by one
 	for i := 0; i < len(OriginalMessage); i++ {
@@ -167,56 +167,87 @@ func DecryptRC4(cle string, CryptedMessage string) string {
 	return string(OriginalMessage)
 }
 
-func GeneratKeyRSA(p, q int) ([]int, []int) {
-	N := p * q
-	X := (p - 1) * (q - 1)
-	E := 65537
-	D := ModuloInverse(E, X)
+func EncryptRSA(N, E int64, message []byte) string {
+	var CryptedMessage string
+	blockSize := 256
 
-	publicKey := []int{N, E}
-	privateKey := []int{N, D}
+	if len(message) > 6 {
+		numBlocks := len(message) / 6
+		if len(message)%6 != 0 {
+			numBlocks++
+		}
 
-	return publicKey, privateKey
-}
+		for i := 0; i < numBlocks; i++ {
+			start := i * 6
+			end := (i + 1) * 6
+			if end > len(message) {
+				end = len(message)
+			}
+			block := message[start:end]
+			numMessage := new(big.Int).SetBytes(block)
+			cryptedBlock := ModExp(numMessage, big.NewInt(E), big.NewInt(N))
+			hexString := cryptedBlock.Text(16)
+			for len(hexString) < 16 {
+				hexString = "0" + hexString
+			}
+			CryptedMessage += hexString
+		}
+	} else {
 
-func EncryptRSA(N, E int, message string) int {
-	/*for _, r := range message {
-		char := int(r)
-		encryptedChar := ModExp(char, E, N)
-		CryptedMessage = append(CryptedMessage, encryptedChar)
-	}*/
-	TableauMessage := 0
-	for i := 0; i < len(message); i++ {
-		if GetNumeroASCII(rune(message[i])) >= 100 {
-			TableauMessage = TableauMessage*1000 + GetNumeroASCII(rune(message[i]))
-		} else {
-			TableauMessage = TableauMessage*100 + GetNumeroASCII(rune(message[i]))
+		for i := 0; i < len(message); i += blockSize {
+			end := i + blockSize
+			if end > len(message) {
+				end = len(message)
+			}
+			block := message[i:end]
+			numMessage := new(big.Int).SetBytes(block)
+			cryptedBlock := ModExp(numMessage, big.NewInt(E), big.NewInt(N))
+			hexString := cryptedBlock.Text(16)
+			for len(hexString) < 16 {
+				hexString = "0" + hexString
+			}
+			CryptedMessage += hexString
 		}
 	}
-	CryptedMessage := ModExp(TableauMessage, E, N)
 
 	return CryptedMessage
 }
 
-func DecryptRSA(N, D int, ciphertext int) string {
-	/*for _, r := range ciphertext {
-		char := int(r)
-		decryptedChar := ModExp(char, D, N)
-		DecryptedMessage = append(DecryptedMessage, decryptedChar)
-	}*/
-	Decryption := ModExp(ciphertext, D, N)
-	fmt.Println(Decryption, "ayaaaaaaaaaa")
-	MessageFinal := []rune{}
-	DecryptedMessage := intToString(Decryption)
-	for i := 0; i < len(DecryptedMessage)-1; i++ {
-		if DecryptedMessage[i] != 49 {
-			test, _ := strconv.Atoi(string(DecryptedMessage[i]))
-			test2, _ := strconv.Atoi(string(DecryptedMessage[i+1]))
-			test3 := test*10 + test2
-			fmt.Println(test3)
-			MessageFinal = append(MessageFinal, rune(test3))
-			i += 1
+func DecryptRSA(N, D int64, ciphertext string) string {
+	var FinalMessage []byte
+	blockSize := 256
+
+	if len(ciphertext) > 16 {
+		numBlocks := len(ciphertext) / 16
+		if len(ciphertext)%16 != 0 {
+			numBlocks++
+		}
+
+		for i := 0; i < numBlocks; i++ {
+			start := i * 16
+			end := (i + 1) * 16
+			if end > len(ciphertext) {
+				end = len(ciphertext)
+			}
+			block := ciphertext[start:end]
+			ciphertextBlock := new(big.Int)
+			ciphertextBlock.SetString(block, 16)
+			decryptedBlock := ModExp(ciphertextBlock, big.NewInt(D), big.NewInt(N))
+			FinalMessage = append(FinalMessage, decryptedBlock.Bytes()...)
+		}
+	} else {
+		for i := 0; i < len(ciphertext); i += blockSize {
+			end := i + blockSize
+			if end > len(ciphertext) {
+				end = len(ciphertext)
+			}
+			block := ciphertext[i:end]
+			ciphertextBlock := new(big.Int)
+			ciphertextBlock.SetString(block, 16)
+			decryptedBlock := ModExp(ciphertextBlock, big.NewInt(D), big.NewInt(N))
+			FinalMessage = append(FinalMessage, decryptedBlock.Bytes()...)
 		}
 	}
-	return string(MessageFinal)
+
+	return string(FinalMessage)
 }

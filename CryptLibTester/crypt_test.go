@@ -76,14 +76,15 @@ func TestRC4(t *testing.T) {
 }
 
 func TestRSA(t *testing.T) {
-	PublicKey, _ := crypt.GeneratKeyRSA(2381, 3677)
-	expectedkey := 8754937
-	if PublicKey[0] != expectedkey {
-		t.Errorf("erreur le sang got %v, expected %v", PublicKey[0], expectedkey)
-	}
-	got := crypt.EncryptRSA(PublicKey[0], PublicKey[1], "Ecla the Best Lang")
-	expected := 1214164
+	PublicKey, PrivateKey := crypt.GeneratKeyRSA(600000833, 1000004233)
+	message := []byte("Ecla the Best Lang")
+	got := crypt.EncryptRSA(PublicKey[0], PublicKey[1], message)
+	expected := "0775162ceb33495b037d5caa5664674a0309ec2a1ccae275"
 	if got != expected {
 		t.Errorf("Erreur d'encryptage: got %v, expected %v", got, expected)
+	}
+	gotDecrypt := crypt.DecryptRSA(PrivateKey[0], PrivateKey[1], got)
+	if gotDecrypt != string(message) {
+		t.Errorf("Erreur d'encryptage: got %v, expected %v", gotDecrypt, message)
 	}
 }
