@@ -236,16 +236,10 @@ func DecryptRSA(N, D int, ciphertext string) string {
 	// We encrypt the characters eight by eight.
 	if len(ciphertext) > 8 {
 		numBlocks := len(ciphertext) / 8
-		if len(ciphertext)%8 != 0 {
-			numBlocks++
-		}
 
 		for i := 0; i < numBlocks; i++ {
 			start := i * 8
 			end := (i + 1) * 8
-			if end > len(ciphertext) {
-				end = len(ciphertext)
-			}
 			// Extract the current block from ciphertext.
 			block := ciphertext[start:end]
 
