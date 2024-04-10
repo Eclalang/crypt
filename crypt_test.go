@@ -74,8 +74,8 @@ func TestRC4(t *testing.T) {
 }
 
 func TestRSA(t *testing.T) {
-	PublicKey, PrivateKey := GeneratKeyRSA(51203, 41179)
-	message := []byte("Ecla the best lang")
+	PublicKey, PrivateKey := GenerateKeyRSA(51203, 41179)
+	message := "Ecla the best lang"
 	got := EncryptRSA(PublicKey[0], PublicKey[1], message)
 	expected := "2c174c6a7a085df4675c027b33caf000176e19ed1fb586cb6759edea7a085df4140675fb"
 	if got != expected {

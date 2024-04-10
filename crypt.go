@@ -165,49 +165,63 @@ func DecryptRC4(cle string, CryptedMessage string) string {
 	return string(OriginalMessage)
 }
 
-func EncryptRSA(N, E int64, message []byte) string {
+func EncryptRSA(N, E int, message string) string {
 	var CryptedMessage string
-
+	var ByteMessage []byte
+	for i := 0; i < len(message); i++ {
+		ByteMessage = append(ByteMessage, message[i])
+	}
 	blockSize := 256
 
-	if len(message) > 2 {
-		numBlocks := len(message) / 2
-		if len(message)%2 != 0 {
+	//We encrypt the characters two by two.
+	if len(ByteMessage) > 2 {
+		numBlocks := len(ByteMessage) / 2
+		if len(ByteMessage)%2 != 0 {
 			numBlocks++
 		}
 
 		for i := 0; i < numBlocks; i++ {
 			start := i * 2
 			end := (i + 1) * 2
-			if end > len(message) {
-				end = len(message)
-			}
-			block := message[start:end]
 
-			numMessage := int64(0)
+			if end > len(ByteMessage) {
+				end = len(ByteMessage)
+			}
+			// Extract the current block from ByteMessage.
+			block := ByteMessage[start:end]
+
+			numMessage := int(0)
+			// Convert the bytes in the block to a numerical value.
 			for j := 0; j < len(block); j++ {
-				numMessage = (numMessage << 8) | int64(block[j])
+				numMessage = (numMessage << 8) | int(block[j])
 			}
 
+			// Encrypt the numerical value of the block using the ModExp function.
 			cryptedBlock := ModExp(numMessage, E, N)
 
+			// Append the encrypted block to the CryptedMessage string in hexadecimal format.
 			CryptedMessage += fmt.Sprintf("%08x", cryptedBlock)
 		}
 	} else {
+
 		for i := 0; i < len(message); i += blockSize {
 			end := i + blockSize
 			if end > len(message) {
 				end = len(message)
 			}
+			// Extract the current block from the message.
 			block := message[i:end]
 
-			numMessage := int64(0)
+			numMessage := int(0)
+			// Convert the bytes in the block to a numerical value.
 			for j := 0; j < len(block); j++ {
-				numMessage = (numMessage << 8) | int64(block[j])
+				numMessage = (numMessage << 8) | int(block[j])
 			}
 
+			// Encrypt the numerical value of the block using the ModExp function.
 			cryptedBlock := ModExp(numMessage, E, N)
 
+			// Append the encrypted block to the CryptedMessage string in hexadecimal format.
 			CryptedMessage += fmt.Sprintf("%08x", cryptedBlock)
 		}
 	}
@@ -215,10 +229,11 @@ func EncryptRSA(N, E int64, message []byte) string {
 	return CryptedMessage
 }
 
-func DecryptRSA(N, D int64, ciphertext string) string {
+func DecryptRSA(N, D int, ciphertext string) string {
 	var OriginalMessage []byte
 	blockSize := 256
 
+	// We encrypt the characters eight by eight.
 	if len(ciphertext) > 8 {
 		numBlocks := len(ciphertext) / 8
 		if len(ciphertext)%8 != 0 {
@@ -231,13 +246,17 @@ func DecryptRSA(N, D int64, ciphertext string) string {
 			if end > len(ciphertext) {
 				end = len(ciphertext)
 			}
+			// Extract the current block from ciphertext.
 			block := ciphertext[start:end]
 
-			ciphertextBlock := int64(0)
+			ciphertextBlock := int(0)
+			// Parse the block from hexadecimal format to its numerical value.
 			fmt.Sscanf(block, "%016x", &ciphertextBlock)
 
+			// Decrypt the numerical value of the block using the ModExp function.
 			decryptedBlock := ModExp(ciphertextBlock, D, N)
 
+			// Extract individual bytes from the decrypted block and append them to the OriginalMessage slice.
 			for j := 0; j < 8; j++ {
 				OriginalMessage = append(OriginalMessage, byte(decryptedBlock>>(8*(7-j))))
 			}
@@ -248,18 +267,23 @@ func DecryptRSA(N, D int64, ciphertext string) string {
 			if end > len(ciphertext) {
 				end = len(ciphertext)
 			}
+			// Extract the current block from ciphertext.
 			block := ciphertext[i:end]
 
-			ciphertextBlock := int64(0)
+			ciphertextBlock := int(0)
+			// Parse the block from hexadecimal format to its numerical value.
 			fmt.Sscanf(block, "%016x", &ciphertextBlock)
 
+			// Decrypt the numerical value of the block using the ModExp function.
 			decryptedBlock := ModExp(ciphertextBlock, D, N)
 
+			// Extract individual bytes from the decrypted block and append them to the OriginalMessage slice.
 			for j := 0; j < 8; j++ {
 				OriginalMessage = append(OriginalMessage, byte(decryptedBlock>>(8*(7-j))))
 			}
 		}
 	}
+	// Remove potential unwanted characters.
 	var FinalMessage string
 	for _, v := range OriginalMessage {
 		if GetNumeroASCII(rune(v)) != 0 {

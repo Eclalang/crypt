@@ -1,20 +1,22 @@
 package crypt
 
-func GeneratKeyRSA(p, q int64) ([]int64, []int64) {
+// Generates an rsa key pair
+func GenerateKeyRSA(p, q int) ([]int, []int) {
 	N := p * q
 	X := (p - 1) * (q - 1)
-	var E int64 = 65537
-	var D int64 = ModuloInverse(E, int64(X))
-	publicKey := []int64{N, E}
-	privateKey := []int64{N, D}
+	var E int = 65537
+	var D int = ModuloInverse(E, int(X))
+	publicKey := []int{N, E}
+	privateKey := []int{N, D}
 
 	return publicKey, privateKey
 }
 
-func ModuloInverse(a, m int64) int64 {
-	var m0, x0, x1 int64 = m, 0, 1
+// Calculates the modular inverse of an integer a modulo m using the extended Euclid modulo inversion algorith
+func ModuloInverse(a, m int) int {
+	var m0, x0, x1 int = m, 0, 1
 	for a > 1 {
-		var q int64 = a / m
+		var q int = a / m
 		m, a = a%m, m
 		x0, x1 = x1-q*x0, x0
 	}
@@ -24,8 +26,9 @@ func ModuloInverse(a, m int64) int64 {
 	return x1
 }
 
-func ModExp(base, exp, mod int64) int64 {
-	result := int64(1)
+// Calculates modular exponentiation using the fast exponentiation algorithm
+func ModExp(base, exp, mod int) int {
+	result := int(1)
 	base %= mod
 	for exp > 0 {
 		if exp&1 == 1 {
