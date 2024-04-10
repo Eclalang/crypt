@@ -1,6 +1,9 @@
-# CRYPT LIBRARY
-## Candidate functions :
+# Crypt library
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/Eclalang/crypt)](https://goreportcard.com/report/github.com/Eclalang/crypt)
+[![codecov](https://codecov.io/gh/Eclalang/crypt/graph/badge.svg?token=YNCIYERVBO)](https://codecov.io/gh/Eclalang/crypt)
+
+## Candidate functions :
 
 |    Func Name    |                        Prototype                        |                                                 Description                                                  |
 |:---------------:|:-------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
