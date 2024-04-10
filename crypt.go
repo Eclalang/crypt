@@ -1,8 +1,6 @@
 package crypt
 
-import (
-	"math/big"
-)
+import "fmt"
 
 func EncryptCaesar(cle int, OriginalMessage string) string {
 
@@ -169,44 +167,48 @@ func DecryptRC4(cle string, CryptedMessage string) string {
 
 func EncryptRSA(N, E int64, message []byte) string {
 	var CryptedMessage string
+
 	blockSize := 256
 
-	if len(message) > 6 {
-		numBlocks := len(message) / 6
-		if len(message)%6 != 0 {
+	if len(message) > 2 {
+		numBlocks := len(message) / 2
+		if len(message)%2 != 0 {
 			numBlocks++
 		}
 
 		for i := 0; i < numBlocks; i++ {
-			start := i * 6
-			end := (i + 1) * 6
+			start := i * 2
+			end := (i + 1) * 2
 			if end > len(message) {
 				end = len(message)
 			}
 			block := message[start:end]
-			numMessage := new(big.Int).SetBytes(block)
-			cryptedBlock := ModExp(numMessage, big.NewInt(E), big.NewInt(N))
-			hexString := cryptedBlock.Text(16)
-			for len(hexString) < 16 {
-				hexString = "0" + hexString
+
+			numMessage := int64(0)
+			for j := 0; j < len(block); j++ {
+				numMessage = (numMessage << 8) | int64(block[j])
 			}
-			CryptedMessage += hexString
+
+			cryptedBlock := ModExp(numMessage, E, N)
+
+			CryptedMessage += fmt.Sprintf("%08x", cryptedBlock)
 		}
 	} else {
-
 		for i := 0; i < len(message); i += blockSize {
 			end := i + blockSize
 			if end > len(message) {
 				end = len(message)
 			}
 			block := message[i:end]
-			numMessage := new(big.Int).SetBytes(block)
-			cryptedBlock := ModExp(numMessage, big.NewInt(E), big.NewInt(N))
-			hexString := cryptedBlock.Text(16)
-			for len(hexString) < 16 {
-				hexString = "0" + hexString
+
+			numMessage := int64(0)
+			for j := 0; j < len(block); j++ {
+				numMessage = (numMessage << 8) | int64(block[j])
 			}
-			CryptedMessage += hexString
+
+			cryptedBlock := ModExp(numMessage, E, N)
+
+			CryptedMessage += fmt.Sprintf("%08x", cryptedBlock)
 		}
 	}
 
@@ -214,26 +216,31 @@ func EncryptRSA(N, E int64, message []byte) string {
 }
 
 func DecryptRSA(N, D int64, ciphertext string) string {
-	var FinalMessage []byte
+	var OriginalMessage []byte
 	blockSize := 256
 
-	if len(ciphertext) > 16 {
-		numBlocks := len(ciphertext) / 16
-		if len(ciphertext)%16 != 0 {
+	if len(ciphertext) > 8 {
+		numBlocks := len(ciphertext) / 8
+		if len(ciphertext)%8 != 0 {
 			numBlocks++
 		}
 
 		for i := 0; i < numBlocks; i++ {
-			start := i * 16
-			end := (i + 1) * 16
+			start := i * 8
+			end := (i + 1) * 8
 			if end > len(ciphertext) {
 				end = len(ciphertext)
 			}
 			block := ciphertext[start:end]
-			ciphertextBlock := new(big.Int)
-			ciphertextBlock.SetString(block, 16)
-			decryptedBlock := ModExp(ciphertextBlock, big.NewInt(D), big.NewInt(N))
-			FinalMessage = append(FinalMessage, decryptedBlock.Bytes()...)
+
+			ciphertextBlock := int64(0)
+			fmt.Sscanf(block, "%016x", &ciphertextBlock)
+
+			decryptedBlock := ModExp(ciphertextBlock, D, N)
+
+			for j := 0; j < 8; j++ {
+				OriginalMessage = append(OriginalMessage, byte(decryptedBlock>>(8*(7-j))))
+			}
 		}
 	} else {
 		for i := 0; i < len(ciphertext); i += blockSize {
@@ -242,12 +249,22 @@ func DecryptRSA(N, D int64, ciphertext string) string {
 				end = len(ciphertext)
 			}
 			block := ciphertext[i:end]
-			ciphertextBlock := new(big.Int)
-			ciphertextBlock.SetString(block, 16)
-			decryptedBlock := ModExp(ciphertextBlock, big.NewInt(D), big.NewInt(N))
-			FinalMessage = append(FinalMessage, decryptedBlock.Bytes()...)
+
+			ciphertextBlock := int64(0)
+			fmt.Sscanf(block, "%016x", &ciphertextBlock)
+
+			decryptedBlock := ModExp(ciphertextBlock, D, N)
+
+			for j := 0; j < 8; j++ {
+				OriginalMessage = append(OriginalMessage, byte(decryptedBlock>>(8*(7-j))))
+			}
 		}
 	}
-
-	return string(FinalMessage)
+	var FinalMessage string
+	for _, v := range OriginalMessage {
+		if GetNumeroASCII(rune(v)) != 0 {
+			FinalMessage += string(v)
+		}
+	}
+	return FinalMessage
 }
